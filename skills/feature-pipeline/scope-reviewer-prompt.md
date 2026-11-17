@@ -72,7 +72,8 @@ Subagent (general-purpose):
        - Out of Scope must not list something the spec asks for.
        - Constraints and Assumptions must not contradict the spec.
        - Personal Data must be present. If the spec involves data that
-         identifies a person or describes their health and the section says
+         identifies a person, describes their health or finances, is a
+         credential tied to a person, or is regulated, and the section says
          none, that is a finding — the pipeline uses this section to decide
          whether a privacy review runs.
     7. Re-run (when [PRIOR_FINDINGS_FILE] is not `none`):
@@ -88,6 +89,10 @@ Subagent (general-purpose):
          hold — the analyst already knows the item isn't in the spec.
        - A prior finding NOT FIXED with no disagreement entry: say so
          plainly — "not addressed, no reason given."
+       - A prior finding you mark NOT FIXED is listed again under Findings
+         with its original ID and severity and counts toward the verdict.
+         New findings continue numbering after the highest ID in
+         [PRIOR_FINDINGS_FILE].
 
     ## Severity
 

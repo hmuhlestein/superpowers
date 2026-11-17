@@ -76,7 +76,10 @@ Subagent (general-purpose):
     Critical/Important finding, mark FIXED or NOT FIXED with file:line
     evidence, and check each fix for regressions (a sanitizer added on one
     path but not its sibling; an auth check that now fails open). Then
-    review for new issues.
+    review for new issues. A prior finding you mark NOT FIXED is listed
+    again under Findings with its original ID and severity and counts
+    toward the verdict. New findings continue numbering after the highest
+    ID in [PRIOR_FINDINGS_FILE].
 
     ## Step 1: Classify the Feature
 
@@ -101,8 +104,9 @@ Subagent (general-purpose):
     2. The console summary gives only counts for detect-secrets. Before
        cleaning up, read its per-finding detail from
        `.ash/ash_output/scanners/detect-secrets/source/results_sarif.sarif`.
-       Then `rm -rf .ash` and confirm with `git status --porcelain` that the
-       tree is exactly as you found it.
+       Then `rm -rf .ash` and confirm with `git status --porcelain -- . ':!docs/superpowers/pipeline'`
+       that the tree is exactly as you found it (sibling reviewers write
+       their reports under the run dir while you work).
     3. If `uvx` is unavailable, or the scan fails or times out, do NOT
        install uv or anything else. Record `SCAN NOT RUN: <reason>`
        verbatim, add an open question asking your human partner to install
@@ -243,6 +247,9 @@ Subagent (general-purpose):
     Return only: the verdict line, the counts line, the path [OUTPUT_FILE],
     and one line per Critical/Important finding (`SEC-N — title`). Nothing
     else.
+    Add one line per open question for your human partner, verbatim
+    (or `Open questions: none`).
+    Also one line of ASH scan status: `ASH: ran` or `SCAN NOT RUN: <reason>`.
 ```
 
 **Placeholders:**

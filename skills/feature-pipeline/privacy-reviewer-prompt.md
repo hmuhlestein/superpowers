@@ -70,7 +70,10 @@ Subagent (general-purpose):
     Critical/Important finding, mark FIXED or NOT FIXED with file:line
     evidence, and check each fix for regressions (redaction added to one log
     call but not its sibling; an audit write that now skips the error path).
-    Then review for new issues.
+    Then review for new issues. A prior finding you mark NOT FIXED is listed
+    again under Findings with its original ID and severity and counts
+    toward the verdict. New findings continue numbering after the highest
+    ID in [PRIOR_FINDINGS_FILE].
 
     ## Step 1: Build the Personal-Data Inventory (do this first)
 
@@ -222,6 +225,8 @@ Subagent (general-purpose):
     Return only: the verdict line, the counts line, the path [OUTPUT_FILE],
     and one line per Critical/Important finding (`PRIV-N — title`). Nothing
     else.
+    Add one line per open question for your human partner, verbatim
+    (or `Open questions: none`).
 ```
 
 **Placeholders:**

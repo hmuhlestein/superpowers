@@ -27,9 +27,12 @@ Subagent (general-purpose):
     - Prior QA report: [PRIOR_FINDINGS_FILE] (`none` on the first run)
     - Write your report to: [OUTPUT_FILE]
 
-    **Base:** [BASE_SHA]
+    **Base:** [BASE_SHA] — always the branch's merge base, on re-runs too.
+    It is your baseline for "pre-existing", coverage, and scope.
     **Head:** [HEAD_SHA]
-    **Diff file:** [DIFF_FILE]
+    **Diff file:** [DIFF_FILE] (the whole branch)
+    **Fix range:** [FIX_RANGE] — on a re-run, the commits of the fix wave
+    you are re-checking (look there first); `none` on the first run.
 
     Read the diff file once — it holds the commit list, a stat summary, and
     the full diff. If the diff file is missing, fetch the diff yourself:
@@ -71,8 +74,10 @@ Subagent (general-purpose):
 
     ## Method
 
-    1. **Find the project's own commands.** If TESTING.md exists at the repo
-       root, it is primary: follow its run, log, test, smoke-test, and
+    1. **Find the project's own commands.** Look for TESTING.md at the repo
+       root and, if you are in a linked worktree, also at the main
+       checkout's root (`git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel`)
+       — it may be untracked there. If it exists, it is primary: follow its run, log, test, smoke-test, and
        acceptance sections exactly, using its commands verbatim. Otherwise
        derive commands from CI config (`.github/workflows/`, etc.),
        Makefile/justfile, package scripts, pyproject/setup.cfg, Cargo.toml,
@@ -85,6 +90,10 @@ Subagent (general-purpose):
        [BASE_SHA] in a temp worktree and label it pre-existing. Warnings and
        noise in test output are findings — output should be pristine. Newly
        added skip/xfail/`.only` markers in the diff are findings.
+       **Weakened tests are Critical:** in tests that existed at
+       [BASE_SHA], any deletion, loosened assertion, changed expected
+       value, widened tolerance, or added skip that the spec or a REQ does
+       not require. A suite made green by editing old tests proves nothing.
 
     3. **Run static checks and the build.** Every linter, formatter check,
        type checker, and build step the project configures. New errors in
@@ -94,6 +103,8 @@ Subagent (general-purpose):
     4. **Measure changed-line coverage** if the project has coverage tooling:
        scope it to lines changed in [BASE_SHA]..[HEAD_SHA] (diff-cover or the
        stack's equivalent), never whole-repo coverage. Report the number.
+       Below 80% of changed source lines is an Important finding, unless
+       the plan's Global Constraints set a different floor (use that one).
        Changed logic that backs an acceptance criterion and is never executed
        by any test is a finding. If the diff changed no measurable code,
        say "not applicable" rather than substituting a whole-repo number.
@@ -116,14 +127,20 @@ Subagent (general-purpose):
        Minor otherwise.
 
     8. **Confirm earlier review fixes held.** For each Critical/Important
-       finding in [RUN_DIR]/adversarial.md, security.md, and privacy.md
-       (whichever exist) that was fixed, re-run its reproduction or covering
-       test. A regressed fix is a finding at its original severity, citing
+       finding in [RUN_DIR]/adversarial.md, security.md, privacy.md, and
+       review.md (whichever exist) — and in their earlier rounds
+       `<name>-r<N>.md`, where the original reproduction lives — that was
+       fixed, re-run its reproduction or covering test. A regressed fix is a finding at its original severity, citing
        the original ID.
 
     9. **On a re-run,** mark each Critical/Important finding in
        [PRIOR_FINDINGS_FILE] FIXED or NOT FIXED with the evidence, and check
-       each fix for regressions.
+       each fix for regressions. Still run steps 2–8 in full against
+       [BASE_SHA] — a re-run is a complete QA pass, not a check of the fix
+       alone. A prior finding you mark NOT FIXED is listed again under
+       Findings with its original ID and severity and counts toward the
+       verdict. New findings continue numbering after the highest ID in
+       [PRIOR_FINDINGS_FILE].
 
     ## Calibration
 
@@ -167,6 +184,8 @@ Subagent (general-purpose):
 
     Only: the verdict line, the counts line, [OUTPUT_FILE], and one line per
     Critical/Important finding (`QA-N — title`). Nothing else.
+    Add one line per open question for your human partner, verbatim
+    (or `Open questions: none`).
 ```
 
 **Placeholders:**
@@ -176,7 +195,8 @@ Subagent (general-purpose):
 - `[ARCHITECTURE_FILE]` — [RUN_DIR]/architecture.md
 - `[RUN_DIR]` — the pipeline run directory
 - `[OUTPUT_FILE]` — [RUN_DIR]/qa.md
-- `[BASE_SHA]`, `[HEAD_SHA]` — the branch range under validation
+- `[BASE_SHA]`, `[HEAD_SHA]` — the whole branch: merge base to head, on every run
+- `[FIX_RANGE]` — re-runs: `FIX_BASE..HEAD` of the fix wave being re-checked; `none` on the first run
 - `[DIFF_FILE]` — review package from subagent-driven-development's `scripts/review-package`
 - `[PRIOR_FINDINGS_FILE]` — previous qa.md on a re-run, or `none`
 

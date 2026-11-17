@@ -86,9 +86,12 @@ Subagent (general-purpose):
     - Source: the spec section it comes from.
     - Priority: P1 (the feature is pointless without it), P2, P3.
     - Personal data: name every field that identifies a person (name, date
-      of birth, address, phone, email, government ID) or describes their
-      health (record numbers, diagnoses, medications, insurance IDs,
-      biometrics), even when the spec does not use those words. This is
+      of birth, address, phone, email, government ID, account or user ID,
+      IP address, device ID, precise location), describes their health
+      (record numbers, diagnoses, medications, insurance IDs, biometrics),
+      or their finances (card, bank, or payment data), plus credentials
+      tied to a person and anything a regulation governs — even when the
+      spec does not use those words. This is
       identification only, not a compliance review — the pipeline uses this
       section to decide whether a privacy review runs.
 

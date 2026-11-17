@@ -52,10 +52,13 @@ Subagent (general-purpose):
     ## Re-Run: Address the Gate's Findings
 
     If [PRIOR_FINDINGS_FILE] is not `none`, it is the design gate's
-    challenge report against your previous design, which the controller
-    renamed to the newest `architecture-r<N>.md` beside [OUTPUT_FILE].
-    Start from that document and write the revision to [OUTPUT_FILE] —
-    do not redesign from scratch. Answer every
+    challenge report against your previous design — or, after code was
+    built, one or more post-build reports with REDESIGN findings. The
+    controller renamed your previous design to the newest
+    `architecture-r<N>.md` beside [OUTPUT_FILE]. Start from that document
+    and write the revision to [OUTPUT_FILE] — do not redesign from scratch.
+    After a post-build REDESIGN, the built code is your starting point:
+    state which built components change and how. Answer every
     Critical and Important finding in the Response to Prior Findings
     section: CHANGED (which section, what changed) or REJECTED (the
     reason, citing the spec, a requirement, or code with file:line). A
@@ -143,6 +146,12 @@ Subagent (general-purpose):
     applied centrally (prefer an established library or a shared logger
     filter over per-call-site omission, so a new log line can't leak). If
     none is identified, write "None identified" — do not omit the line.
+
+    **Configuration and logging.** No hardcoded ports, paths, URLs,
+    credentials, or timeouts — name the config key and default for each.
+    State the logging approach: which events log at which level, the
+    structured fields, and that personal fields are redacted per the
+    decision above.
 
     **8. Check against the existing codebase.** New paths that collide
     with or shadow existing modules; endpoints, tables, or config keys

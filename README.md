@@ -359,7 +359,7 @@ Superpowers is built by [Jesse Vincent](https://blog.fsck.com) and the rest of t
 - **using-git-worktrees** - Parallel development branches
 - **finishing-a-development-branch** - Merge/PR decision workflow
 - **subagent-driven-development** - Fast iteration with two-stage review (spec compliance, then code quality)
-- **feature-pipeline** - Gated spec-to-release pipeline: requirements, architecture, design challenge, adversarial/security/privacy review, QA, product validation, docs, release
+- **feature-pipeline** - Gated spec-to-release pipeline: requirements, architecture, design challenge, adversarial/security/privacy review, QA, product validation, docs, HTML feature report, release. Runs interactively or unattended (`skills/feature-pipeline/scripts/run-unattended SPEC_FILE`)
 
 **Meta**
 - **writing-skills** - Create new skills following best practices (includes testing methodology)

@@ -113,7 +113,10 @@ Subagent (general-purpose):
        from docs.md, known limitations and accepted risks (outstanding Minor
        findings, open questions), deploy notes.
 
-    6. **Deploy preflight.** If DEPLOY.md exists at the repo root, read it
+    6. **Deploy preflight.** Look for DEPLOY.md at the repo root and at
+       the main checkout's root when you are in a linked worktree
+       (`git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel`)
+       — it may be untracked there. If it exists, read it
        fully and record: target environments; prerequisites (tools,
        credentials, access — you may check tool presence with
        `command -v`, nothing more); the exact steps in order, commands
@@ -156,7 +159,10 @@ Subagent (general-purpose):
     ## CI Status — result, commit it ran on, failing checks, unchecked gates
     ## PR Draft — title, then body
     ## Deploy Preflight — as in prepare step 6, or the out-of-scope line
-    ## Blockers and Open Questions for Your Human Partner
+    ## Blockers and Open Questions for Your Human Partner — tag each
+       blocker `[fixable]` (a fix subagent can resolve it with a new
+       commit) or `[needs human]` (rotation, history rewrite, squash,
+       anything that is your human partner's call)
 
     Deploy mode appends:
 
@@ -170,7 +176,8 @@ Subagent (general-purpose):
 
     Only: mode; commits made (short SHA + subject, or "none"); CI status
     (one line); DEPLOY.md present yes/no (deploy mode: the outcome); one
-    line per blocker; [OUTPUT_FILE]. Nothing else.
+    line per blocker with its `[fixable]` / `[needs human]` tag; one line
+    per open question; [OUTPUT_FILE]. Nothing else.
 ```
 
 **Placeholders:**

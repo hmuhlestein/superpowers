@@ -2,7 +2,7 @@
 
 Use this template when dispatching the product validator subagent after QA
 passes. Part of superpowers:feature-pipeline (stage 9). FIX goes to the fix
-subagent; REDESIGN goes back to architecture (stage 3).
+wave; REDESIGN goes to the controller's redesign procedure.
 
 **Purpose:** Confirm, from a user's point of view and with evidence, that the built software delivers the spec's intent and every REQ's acceptance criteria.
 
@@ -107,7 +107,10 @@ Subagent (general-purpose):
        existing patterns.
     8. **Re-run** (when [PRIOR_FINDINGS_FILE] is not `none`): mark each prior
        Critical/Important finding FIXED or NOT FIXED with fresh evidence,
-       and check each fix for regressions in the REQs it touches.
+       and check each fix for regressions in the REQs it touches. A prior
+       finding you mark NOT FIXED is listed again under Findings with its
+       original ID and severity and counts toward the verdict. New findings
+       continue numbering after the highest ID in [PRIOR_FINDINGS_FILE].
 
     ## Severity
 

@@ -58,6 +58,17 @@ else
 fi
 echo ""
 
+# Test: run the full feature pipeline
+echo ">>> Test 5: run-the-full-pipeline"
+if "$SCRIPT_DIR/run-test.sh" "feature-pipeline" "$PROMPTS_DIR/run-the-full-pipeline.txt"; then
+    PASSED=$((PASSED + 1))
+    RESULTS="$RESULTS\nPASS: run-the-full-pipeline"
+else
+    FAILED=$((FAILED + 1))
+    RESULTS="$RESULTS\nFAIL: run-the-full-pipeline"
+fi
+echo ""
+
 echo "=== Summary ==="
 echo -e "$RESULTS"
 echo ""

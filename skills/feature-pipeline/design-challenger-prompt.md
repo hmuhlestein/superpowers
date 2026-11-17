@@ -59,6 +59,10 @@ Subagent (general-purpose):
     not, keep it and say why the reason fails. A prior finding that is
     unchanged and unanswered is NOT FIXED — say so plainly. Check each
     fix for new problems it introduced. Do not re-report fixed findings.
+    A prior finding you mark NOT FIXED is listed again under Findings with
+    its original ID and severity and counts toward the verdict. New
+    findings continue numbering after the highest ID in
+    [PRIOR_FINDINGS_FILE].
 
     ## What to Check
 
@@ -187,6 +191,9 @@ Subagent (general-purpose):
          - REQ: related REQ ID(s), or "none"
       ## Requirements Coverage — REQ IDs with no satisfying component;
          components with no REQ. "Complete" if neither.
+      ## Open Questions for Your Human Partner — problems in the spec or
+         requirements themselves that the architect cannot resolve; "none"
+         if none. A spec problem is a question, not a DES finding.
       ## Declined to judge — every concern you considered and set aside
          as outside the spec or requirements, one line each with the
          reason. Empty means you set nothing aside.
@@ -202,6 +209,8 @@ Subagent (general-purpose):
     Your final message: the verdict line, the counts line, the output
     path, and one line per Critical/Important finding (`DES-N — title`).
     Nothing else.
+    Add one line per open question for your human partner, verbatim
+    (or `Open questions: none`).
 ```
 
 **Placeholders:**

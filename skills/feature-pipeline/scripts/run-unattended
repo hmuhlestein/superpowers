@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+# Run superpowers:feature-pipeline unattended in headless Claude Code.
+#
+# Usage: run-unattended SPEC_FILE [--integration keep|pr] [--log FILE] [-- CLAUDE_ARGS...]
+#
+#   SPEC_FILE        an existing spec inside the target git repository
+#   --integration    keep (default): leave the branch; pr: push it and open a PR
+#   --log FILE       transcript path (default: $TMPDIR/feature-pipeline/<timestamp>.log)
+#   CLAUDE_ARGS      passed to `claude -p` unchanged — permissions go here.
+#                    Headless runs cannot answer permission prompts, so give
+#                    the session what it needs, e.g. `-- --permission-mode
+#                    bypassPermissions` inside a disposable container or VM,
+#                    or an --allowedTools list.
+#
+# Relaunch with the same SPEC_FILE to resume a Blocked run after writing
+# answers to <run dir>/human-input.md.
+#
+# Exit codes: 0 COMPLETE, 2 BLOCKED, 1 FAILED or no status line, 64 usage.
+set -euo pipefail
+
+usage() {
+  sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'
+}
+
+spec=""
+integration="keep"
+log=""
+claude_args=()
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --integration)
+      [ $# -ge 2 ] || { echo "--integration needs a value" >&2; exit 64; }
+      integration="$2"
+      shift 2
+      ;;
+    --log)
+      [ $# -ge 2 ] || { echo "--log needs a value" >&2; exit 64; }
+      log="$2"
+      shift 2
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      claude_args=("$@")
+      break
+      ;;
+    -*)
+      echo "unknown option: $1" >&2
+      usage >&2
+      exit 64
+      ;;
+    *)
+      [ -z "$spec" ] || { echo "only one SPEC_FILE allowed" >&2; exit 64; }
+      spec="$1"
+      shift
+      ;;
+  esac
+done
+
+[ -n "$spec" ] || { usage >&2; exit 64; }
+[ -f "$spec" ] || { echo "no such spec file: $spec" >&2; exit 64; }
+case "$integration" in
+  keep | pr) ;;
+  *) echo "--integration must be keep or pr, not: $integration" >&2; exit 64 ;;
+esac
+command -v claude >/dev/null 2>&1 || { echo "claude CLI not found on PATH" >&2; exit 1; }
+
+spec_dir=$(cd "$(dirname "$spec")" && pwd -P)
+spec_abs="$spec_dir/$(basename "$spec")"
+repo=$(git -C "$spec_dir" rev-parse --show-toplevel 2>/dev/null) || {
+  echo "spec is not inside a git repository: $spec" >&2
+  exit 64
+}
+repo=$(cd "$repo" && pwd -P)
+spec_rel="${spec_abs#"$repo"/}"
+
+if [ -z "$log" ]; then
+  log_dir="${TMPDIR:-/tmp}"
+  log="${log_dir%/}/feature-pipeline/$(date +%Y%m%d-%H%M%S).log"
+fi
+mkdir -p "$(dirname "$log")"
+
+if [ ${#claude_args[@]} -eq 0 ]; then
+  echo "warning: no CLAUDE_ARGS given; tool calls that need permission will be denied" >&2
+fi
+
+prompt="Use superpowers:feature-pipeline in unattended mode. Spec: $spec_rel. Integration: $integration."
+
+echo "repo:        $repo"
+echo "spec:        $spec_rel"
+echo "integration: $integration"
+echo "log:         $log"
+
+cd "$repo"
+set +e
+claude -p "$prompt" ${claude_args[@]+"${claude_args[@]}"} 2>&1 | tee "$log"
+set -e
+
+status=$(grep -E '^PIPELINE STATUS: ' "$log" | tail -n 1 || true)
+case "$status" in
+  "PIPELINE STATUS: COMPLETE"*) exit 0 ;;
+  "PIPELINE STATUS: BLOCKED"*) exit 2 ;;
+  *)
+    [ -n "$status" ] || echo "no PIPELINE STATUS line in output; see $log" >&2
+    exit 1
+    ;;
+esac

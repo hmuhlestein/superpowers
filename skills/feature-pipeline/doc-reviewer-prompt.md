@@ -98,7 +98,7 @@ Subagent (general-purpose):
        with `git mv`; remove scratch files with `git rm`. Never touch files
        that existed at [BASE_SHA], and never delete untracked files — they
        may be your human partner's work; list them under Unresolved instead.
-       If a stray file looks deliberate, leave it and ask.
+       If a stray file looks deliberate, leave it and list it under Unresolved.
 
     7. **Commit.** Stage only the files you edited, moved, or removed — no
        `git add -A`. Write a descriptive commit message in the repo's
@@ -124,7 +124,7 @@ Subagent (general-purpose):
     ## Report Back
 
     Only: commits made (short SHA + subject, or "none"), number of docs
-    changed, number of Unresolved items, and [OUTPUT_FILE]. Nothing else.
+    changed, one line per Unresolved item, and [OUTPUT_FILE]. Nothing else.
 ```
 
 **Placeholders:**

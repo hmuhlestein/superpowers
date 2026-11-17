@@ -1,8 +1,8 @@
 # Feature Reporter Prompt Template
 
 Use this template when dispatching the feature reporter subagent, after the
-documentation reviewer finishes. Part of superpowers:feature-pipeline
-(stage 10). Not a gate: it writes the feature's lasting record.
+release engineer's prepare run and before integration. Part of
+superpowers:feature-pipeline (stage 11). Not a gate: it writes the feature's lasting record.
 
 **Purpose:** Produce a standalone HTML report, plus a Markdown summary, that
 lets someone who never saw the run understand what was built, why, how, and
@@ -10,7 +10,7 @@ what risks shipped with it — without reading the source.
 
 ```
 Subagent (general-purpose):
-  description: "Feature report (stage 10)"
+  description: "Feature report (stage 11)"
   model: [MODEL — REQUIRED: choose per superpowers:feature-pipeline's Model
          Selection; an omitted model silently inherits the session's most
          expensive one]
@@ -26,8 +26,11 @@ Subagent (general-purpose):
     - Requirements (REQ-NN IDs): [REQUIREMENTS_FILE]
     - Architecture: [ARCHITECTURE_FILE]
     - Run dir: [RUN_DIR] — every stage report (scope, challenge,
-      adversarial, security, privacy if present, qa, validation, docs) and
-      the ledger `progress.md`, whose `Ruling:` and parked-finding lines
+      review (architecture conformance), adversarial, security, privacy if
+      present, qa, validation, docs),
+      `release.md`, every earlier round `<name>-r<N>.md` (where the
+      original findings and their reproductions live — current reports may
+      hold only FIXED markers), and the ledger `progress.md`, whose `Ruling:` and parked-finding lines
       are the run's accepted risks and judgment calls
     - Write: [OUTPUT_FILE] (the HTML report) and [SUMMARY_FILE]
 

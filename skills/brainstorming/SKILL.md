@@ -279,7 +279,9 @@ stays labeled throwaway, and keeping what it produced is a new request
 that comes back through this gate.
 
 After the design doc is approved, the next step is the plan: invoke
-superpowers:writing-plans and no other skill.
+superpowers:writing-plans and no other skill. The one exception: when
+superpowers:feature-pipeline sent you here, return to it — it runs
+requirements and architecture before the plan.
 </HARD-GATE>
 
 ## Red Flags

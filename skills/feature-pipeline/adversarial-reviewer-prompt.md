@@ -43,7 +43,9 @@ Subagent (general-purpose):
 
     Do not edit source, tests, config, or docs, and do not mutate the working
     tree, the index, HEAD, or branch state. The only file you write is
-    [OUTPUT_FILE]. You may run existing tests, and you may write a throwaway
+    [OUTPUT_FILE]. Sibling reviewers run concurrently in this same working
+    tree, so run only targeted tests for the failure mode you are probing —
+    never the full suite (QA owns that). You may run existing tests, and you may write a throwaway
     reproduction script in a temporary directory outside the repository to
     confirm a failure — never inside the working tree. A separate fix
     subagent acts on your report, so make every fix specific enough to
@@ -70,7 +72,10 @@ Subagent (general-purpose):
     Critical/Important finding, mark FIXED or NOT FIXED with file:line
     evidence, and check each fix for regressions (a fix that swallows the
     error it was meant to surface is a new finding). Then hunt for new
-    failure modes; do not re-list fixed ones.
+    failure modes; do not re-list fixed ones. A prior finding you mark NOT
+    FIXED is listed again under Findings with its original ID and severity
+    and counts toward the verdict. New findings continue numbering after
+    the highest ID in [PRIOR_FINDINGS_FILE].
 
     ## Attack Vectors
 
@@ -197,6 +202,8 @@ Subagent (general-purpose):
     Return only: the verdict line, the counts line, the path [OUTPUT_FILE],
     and one line per Critical/Important finding (`ADV-N — title`). Nothing
     else.
+    Add one line per open question for your human partner, verbatim
+    (or `Open questions: none`).
 ```
 
 **Placeholders:**
