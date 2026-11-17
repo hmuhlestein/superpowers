@@ -26,7 +26,9 @@ its gates around them, and builds from tasks.md.
 - Ledger first line: `# Pipeline ledger — spec: <FEATURE_DIR>/spec.md`.
 - **Constitution.** `.specify/memory/constitution.md` binds only when it is
   filled in. It is the unfilled template when it still contains
-  `[PROJECT_NAME]` or `[PRINCIPLE_1_NAME]`, or its sha256 equals the one in
+  `[PROJECT_NAME]` or `[PRINCIPLE_1_NAME]` outside HTML comments (the Sync
+  Impact Report comment speckit-constitution writes lists the placeholders it
+  replaced), or its sha256 equals the one in
   `.specify/memory/.constitution-template.json`. Unfilled → there is no
   constitution; say "none" wherever this file names it.
 - **Feature resolution.** Spec Kit finds the feature from

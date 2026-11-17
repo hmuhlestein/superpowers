@@ -42,7 +42,9 @@ constitution="none"
 c="$repo/.specify/memory/constitution.md"
 if [ -f "$c" ]; then
   constitution=".specify/memory/constitution.md"
-  if grep -qE '\[(PROJECT_NAME|PRINCIPLE_1_NAME)\]' "$c"; then
+  # Placeholders count only outside HTML comments: speckit-constitution's own
+  # Sync Impact Report comment lists the old placeholder names it replaced.
+  if awk '/<!--/{c=1} !c{print} /-->/{c=0}' "$c" | grep -qE '\[(PROJECT_NAME|PRINCIPLE_1_NAME)\]'; then
     constitution="none"
   elif [ -f "$repo/.specify/memory/.constitution-template.json" ]; then
     template_sha=$(sed -n 's/.*"sha256": *"\([0-9a-f]*\)".*/\1/p' "$repo/.specify/memory/.constitution-template.json")
