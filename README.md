@@ -31,13 +31,73 @@ To pick up a new version: `claude plugin marketplace update superpowers-dev && c
 
 Gates return `PASS`, `FIX`, or `REDESIGN`. A FIX runs one fix subagent, with a regression test proven to fail first for each fix, then re-reviews the fix. Every loop is capped. Pre-build gates never wave findings through; post-build gates park Important findings with a recorded ruling and stop on open Critical ones. Each run keeps a resumable ledger and writes a standalone, light/dark-aware `feature_report.html`, with every accepted risk called out near the top. Details: [SKILL.md](skills/feature-pipeline/SKILL.md) and [references/](skills/feature-pipeline/references/).
 
-**Unattended mode.** Run the whole pipeline headless from a written spec:
+### Hands-free mode (unattended runs)
+
+Hands-free mode runs the whole pipeline in a headless `claude -p` session, from a spec you have already written to a finished branch with its feature report. Nobody is asked anything along the way. Use it when the spec is settled and you want the result, not the conversation.
+
+**Before you launch**
+
+- **A written spec.** Hands-free mode never brainstorms or runs `speckit-specify`. Write the spec first, interactively: with superpowers:brainstorming, or with `speckit-constitution` and `speckit-specify` in a Spec Kit project. Settle any `[NEEDS CLARIFICATION: …]` markers first (`speckit-clarify`), because a run that finds one stops as BLOCKED.
+- **Committed spec.** The run works in its own worktree. It copies uncommitted spec files in, but committing them first keeps things simple.
+- **Tools.** You need the `claude` CLI and this plugin installed. `uv` enables the security scan; without it the run continues and lists the missing scan as an accepted risk. `gh` is needed only for `--integration pr`.
+
+**Launch**
 
 ```bash
-skills/feature-pipeline/scripts/run-unattended SPEC_FILE_OR_SPECKIT_DIR [--integration keep|pr] -- <claude permission flags>
+LAUNCHER=~/.claude/plugins/cache/superpowers-dev/superpowers/<version>/skills/feature-pipeline/scripts/run-unattended
+
+# a plain spec
+bash "$LAUNCHER" docs/superpowers/specs/2026-11-17-export-design.md -- --dangerously-skip-permissions
+
+# a Spec Kit feature: pass the feature directory or its spec.md
+bash "$LAUNCHER" specs/001-cli-calculator --integration keep -- --dangerously-skip-permissions
 ```
 
-It never asks questions: it records conservative rulings and stops as `BLOCKED` only for decisions that need a human. It never merges or deploys. Exit codes are 0 COMPLETE, 2 BLOCKED, 1 FAILED. To resume a blocked run, answer in `<run dir>/human-input.md` and relaunch. Headless runs can't answer permission prompts, so pass permission flags yourself, and use `--dangerously-skip-permissions` only somewhere disposable.
+| Option | Meaning |
+|---|---|
+| `--integration keep` (default) | Leave the finished branch and worktree for you to review and merge. |
+| `--integration pr` | Push the branch, open a PR with the generated title and body, then follow CI and automated review comments for up to two fix rounds. It never merges and never force-pushes. |
+| `--log FILE` | Where the transcript goes (default `$TMPDIR/feature-pipeline/<timestamp>.log`). |
+| `-- <claude flags>` | Passed straight to `claude -p`. **Permissions go here.** A headless run can't answer permission prompts, so anything not pre-approved is denied and the run fails. `--dangerously-skip-permissions` is the simplest choice, but it gates nothing, so use it in a container, VM, or throwaway checkout. The narrower alternative is `--permission-mode acceptEdits --allowedTools Bash Read Write Edit Glob Grep Agent Skill`. |
+
+**How it decides without you**
+
+- **Open questions:** it takes the most conservative reading of the spec (least scope, least data exposure, nothing irreversible). Each one is logged as `Ruling: [unattended] …` and written where later stages read it: `## Resolved Questions` in its own documents, or `## Clarifications` in a Spec Kit spec.md.
+- **Gate findings:** they are fixed and re-reviewed. Post-build Important findings still open after three rounds are parked with a ruling, and every parked finding appears in the report's Accepted Risks section.
+- **A redesign verdict after code exists:** the run rewinds to architecture once.
+- **Never, in hands-free mode:** merging, deploying (even when `DEPLOY.md` exists), rewriting history, force-pushing, or any destructive or security-sensitive action.
+
+**When it stops as BLOCKED**
+
+It stops as BLOCKED instead of guessing when:
+
+- a pre-build gate (requirements, design, or the Spec Kit analyze gate) is still failing after three rounds;
+- a Critical finding is still open at a cap;
+- a second redesign is needed;
+- a merge conflict appears with the base branch;
+- a release blocker needs a human (secret rotation, history rewrite);
+- the spec has unresolved clarification markers.
+
+It commits its run directory and writes `blocked.md` there, naming the decisions it needs and the worktree path. Answer in `<run dir>/human-input.md` (for Spec Kit clarifications, edit spec.md in that worktree), commit, and relaunch with the same spec. It resumes from its ledger.
+
+**What you get**
+
+The run's final lines are machine-readable, and the launcher's exit code matches them:
+
+```
+PIPELINE REPORT: specs/001-cli-calculator/feature_report.html
+PIPELINE STATUS: COMPLETE — <reason>
+```
+
+Exit codes: 0 COMPLETE, 2 BLOCKED, 1 FAILED or no status line, 64 bad arguments. The run directory (`docs/superpowers/pipeline/<date>-<feature>/`, or the Spec Kit feature directory) holds:
+
+- `progress.md`, the ledger of every stage, verdict, fix wave, and ruling;
+- every gate report, including earlier rounds as `<name>-r<N>.md`;
+- `release.md`, with the PR draft and any deploy preflight;
+- `walkthrough.md` (what was built, why, and how) and `feature_report.html`;
+- `build-reports/`, the build's per-task reports with the test-first evidence.
+
+To watch a run while it works, tail the ledger in its worktree: `tail -f <worktree>/<run dir>/progress.md`.
 
 **Native Spec Kit support.** When a repo has `.specify/` and the spec is a Spec Kit feature (`specs/NNN-name/`), the pipeline resumes from whatever Spec Kit artifacts exist instead of writing its own:
 

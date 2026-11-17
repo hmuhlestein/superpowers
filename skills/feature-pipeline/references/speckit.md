@@ -16,7 +16,8 @@ its gates around them, and builds from tasks.md.
   `FEATURE_DIR`**: pipeline files sit beside Spec Kit's — progress.md,
   challenge.md, analyze.md, pipeline-plan.md, pipeline-constraints.md,
   review.md, adversarial.md, security.md, privacy.md, qa.md, validation.md,
-  docs.md, release.md, summary.md, feature_report.html, fix-*.md. None
+  docs.md, release.md, walkthrough.md, feature_report.html, fix-*.md,
+  build-reports/. None
   collide with Spec Kit's names.
 - **Run detection.** Read `FEATURE_DIR/progress.md` directly. If its ledger
   shows `Stage 11 Release: complete`, this is a new run on a finished
@@ -144,7 +145,10 @@ T-IDs in the right phase.
 
 Write `FEATURE_DIR/pipeline-constraints.md` once, as bullet lines: tests
 are required for every task's behavior; the changed-line coverage floor (80%
-unless spec, plan, or constitution sets one); and, verbatim from plan.md and
+unless spec, plan, or constitution sets one) only when the project has a
+coverage tool or its constitution allows adding one — otherwise "Coverage:
+not measured — no coverage tool permitted", and never a task to build one;
+and, verbatim from plan.md and
 the constitution, the security and privacy decisions (including log
 redaction) and configuration decisions. The converter appends this file to
 the plan's Global Constraints every time it runs.
@@ -158,11 +162,12 @@ subagent-driven-development's ledger stays valid when the plan is
 regenerated. Exit 3: nothing left to build. Exit 4: task lines outside any
 section — fix tasks.md first.
 
-**Verification-only lines** (run the scenarios against a live instance, run
-the full suite, manual checks) are not implementation work. Tell
-implementers: leave such a line unchecked and say so in the report. QA
-performs them in stage 8; tick them after QA passes, in the same commit as
-qa.md.
+**Verification-only lines** (scenarios against a live or shared
+environment, a full-suite run, a manual walkthrough) are not implementation
+work: implementers leave them unchecked, QA performs them in stage 8, and
+you tick them after QA passes, in the same commit as qa.md. Test-first
+red/green checks are implementation work — implementers run and tick them.
+The converter's task text says both.
 
 Commit tasks.md, the design files, pipeline-constraints.md, and
 pipeline-plan.md.
@@ -173,7 +178,8 @@ In this order, ledgering each step:
 
 1. Run superpowers:subagent-driven-development with pipeline-plan.md as the
    plan. For its final review, `[ARCHITECTURE_OR_NONE]` is plan.md (with
-   data-model.md and contracts/ beside it); save the report to review.md.
+   data-model.md and contracts/ beside it); save the report to review.md,
+   and archive the build's reports to `build-reports/` (SKILL.md stage 6).
    Ledger `Build round 1: complete`.
 2. Apply SKILL.md's stage-6 routing (copy Rulings; "Violated" → Rewind
    below).

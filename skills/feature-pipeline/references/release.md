@@ -21,9 +21,12 @@ Its blockers come tagged:
 
 Dispatch [feature-reporter-prompt.md](../feature-reporter-prompt.md) over
 MERGE_BASE..HEAD, `[OUTPUT_FILE]` = `[RUN_DIR]/feature_report.html`,
-`[SUMMARY_FILE]` = `[RUN_DIR]/summary.md`. Before you dispatch it, make sure
+`[SUMMARY_FILE]` = `[RUN_DIR]/walkthrough.md`. Before you dispatch it, make sure
 every parked finding and `Ruling:` line is in the ledger — the report is
-only as complete as the ledger.
+only as complete as the ledger. If the harness refuses the reporter's file
+writes and it returns the content as text instead, write both files
+verbatim from its message, run the report's Step 3 checks yourself, and
+ledger a Ruling saying so.
 
 ## 3. Commit and update
 

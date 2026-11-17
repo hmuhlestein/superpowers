@@ -77,10 +77,11 @@ awk -v tasks_rel="$rel_dir/tasks.md" '
       print "Implement every unchecked Spec Kit task line below, in order, honoring"
       print "\"depends on\" notes; `[P]` lines touch independent files. Lines already"
       print "marked `[X]` are done. When a line is finished, change its `- [ ]` to"
-      print "`- [X]` in " tasks_rel " in the same commit as the work. A line that"
-      print "only verifies (run scenarios against a live instance, run the full"
-      print "suite, a manual check) is not implementation work: leave it unchecked"
-      print "and say so in your report — QA performs it.\n"
+      print "`- [X]` in " tasks_rel " in the same commit as the work. Test-first"
+      print "red/green checks are yours: run them, record the output in your report,"
+      print "and tick them. Only a line that needs a live or shared environment, a"
+      print "full-suite run, or a manual walkthrough goes to QA: leave it unchecked"
+      print "and say so in your report.\n"
       printf "%s", buf
       print ""
     }
@@ -132,6 +133,8 @@ title=$(sed -n 's/^# Tasks: //p' "$tasks" | head -n 1)
   echo "  scenarios, and its SC-NNN success criteria. All are binding."
   echo "- The design files above are binding: plan.md's stack and structure,"
   echo "  data-model.md's entities, and contracts/ interfaces exactly as written."
+  echo "- The build commits each task's work, which overrides any \"do not commit\""
+  echo "  instruction in tasks.md."
   if [ "$constitution" != "none" ]; then
     echo "- Every MUST principle in the constitution binds every task."
   fi

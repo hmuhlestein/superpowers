@@ -44,6 +44,9 @@ Subagent (general-purpose):
 
     ## Working Rules
 
+    - If a write is refused, do not route around it (no shell redirection):
+      return both files' full content in your final message, clearly
+      separated, and say the write was refused.
     - Write only [OUTPUT_FILE] and [SUMMARY_FILE]. Do not edit code, docs,
       or other files in [RUN_DIR]. Do not commit — the controller commits
       the run dir.
@@ -58,7 +61,7 @@ Subagent (general-purpose):
     part of the report. If the feature feels too large for one pass, work
     through it in passes yourself.
 
-    ## Step 1: Summary ([SUMMARY_FILE])
+    ## Step 1: Walkthrough ([SUMMARY_FILE])
 
     Explore the change (diff, new and modified files) and write a Markdown
     summary that explains to an engineer:
@@ -176,7 +179,7 @@ Subagent (general-purpose):
 - `[ARCHITECTURE_FILE]` — [RUN_DIR]/architecture.md
 - `[RUN_DIR]` — the pipeline run directory
 - `[OUTPUT_FILE]` — [RUN_DIR]/feature_report.html
-- `[SUMMARY_FILE]` — [RUN_DIR]/summary.md
+- `[SUMMARY_FILE]` — [RUN_DIR]/walkthrough.md
 - `[BASE_SHA]`, `[HEAD_SHA]` — the whole branch range (merge base to head)
 - `[DIFF_FILE]` — review package from subagent-driven-development's `scripts/review-package`
 

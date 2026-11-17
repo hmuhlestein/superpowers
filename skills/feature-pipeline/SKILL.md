@@ -98,7 +98,7 @@ Commit `[RUN_DIR]` each time a stage completes (`docs: <feature> pipeline —
 | 8 | QA | dispatch [qa-validator-prompt.md](qa-validator-prompt.md) | qa.md | fix wave / redesign |
 | 9 | Product validation | dispatch [product-validator-prompt.md](product-validator-prompt.md) | validation.md | fix wave / redesign |
 | 10 | Docs | dispatch [doc-reviewer-prompt.md](doc-reviewer-prompt.md) | docs.md | — (fixes in place) |
-| 11 | Release | [references/release.md](references/release.md): [release-engineer-prompt.md](release-engineer-prompt.md), [feature-reporter-prompt.md](feature-reporter-prompt.md), integration, post-PR follow-up, optional deploy | release.md, summary.md, feature_report.html | release blockers |
+| 11 | Release | [references/release.md](references/release.md): [release-engineer-prompt.md](release-engineer-prompt.md), [feature-reporter-prompt.md](feature-reporter-prompt.md), integration, post-PR follow-up, optional deploy | release.md, walkthrough.md, feature_report.html | release blockers |
 
 Every gate report ends with `Verdict: PASS | FIX | REDESIGN` and a
 `Critical / Important / Minor` count. PASS means zero Critical and zero
@@ -129,7 +129,11 @@ Use superpowers:writing-plans. The plan's **Spec** line names the spec. Its
 and `architecture.md`; the binding REQ IDs; architecture.md's Security and
 Privacy decisions (including the log-redaction approach) and its
 configuration decisions; and the changed-line coverage floor (80% unless the
-spec sets one). Implementers see only their brief plus these constraints.
+spec sets one) — only when the project has a coverage tool or its
+constraints allow adding one. Otherwise write "Coverage: not measured — no
+coverage tool permitted" and rely on the acceptance-criteria test mapping
+below; never have implementers build a coverage tool. Implementers see only
+their brief plus these constraints.
 
 Then check coverage yourself: every `REQ-NN.AC-M` maps to a task whose
 tests exercise it. Add a task for each gap. Commit the plan
@@ -146,7 +150,10 @@ Use superpowers:subagent-driven-development. For its final whole-branch
 review (code-reviewer.md), fill `[ARCHITECTURE_OR_NONE]` with
 `[RUN_DIR]/architecture.md`, and save the reviewer's full report to
 `[RUN_DIR]/review.md` — it is the architecture-conformance record. Ledger
-its `Architecture:` assessment line.
+its `Architecture:` assessment line. Before subagent-driven-development
+deletes its workspace, copy its ledger and every task and fix report into
+`[RUN_DIR]/build-reports/` — they hold the test-first (red/green) evidence
+that QA and the feature report cite, and git history alone doesn't show it.
 
 When subagent-driven-development reaches its finish step, **do not** use
 finishing-a-development-branch. Copy its "Rulings I made" list into the

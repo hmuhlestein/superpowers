@@ -104,7 +104,9 @@ Subagent (general-purpose):
        scope it to lines changed in [BASE_SHA]..[HEAD_SHA] (diff-cover or the
        stack's equivalent), never whole-repo coverage. Report the number.
        Below 80% of changed source lines is an Important finding, unless
-       the plan's Global Constraints set a different floor (use that one).
+       the plan's Global Constraints set a different floor (use that one)
+       or say coverage is not measured. Without coverage tooling, report
+       "not measured" — never write a coverage tool of your own.
        Changed logic that backs an acceptance criterion and is never executed
        by any test is a finding. If the diff changed no measurable code,
        say "not applicable" rather than substituting a whole-repo number.
