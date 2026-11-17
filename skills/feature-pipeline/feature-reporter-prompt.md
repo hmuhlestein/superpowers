@@ -25,7 +25,8 @@ Subagent (general-purpose):
     - Spec: [SPEC_FILE]
     - Requirements (REQ-NN IDs): [REQUIREMENTS_FILE]
     - Architecture: [ARCHITECTURE_FILE]
-    - Run dir: [RUN_DIR] — every stage report (scope, challenge,
+    - Run dir: [RUN_DIR] — every stage report (scope, challenge, analyze
+      (Spec Kit runs),
       review (architecture conformance), adversarial, security, privacy if
       present, qa, validation, docs),
       `release.md`, every earlier round `<name>-r<N>.md` (where the

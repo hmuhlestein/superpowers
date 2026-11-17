@@ -1,0 +1,145 @@
+#!/usr/bin/env bash
+# Convert a Spec Kit tasks.md into a plan subagent-driven-development can
+# execute: one "### Task N" per tasks.md section that still has unchecked task
+# lines, with the phase's text copied verbatim. tasks.md stays the source of
+# truth — implementers tick its checkboxes as they finish each line.
+#
+# Usage: speckit-plan-from-tasks FEATURE_DIR [OUTFILE]
+# Default OUTFILE: FEATURE_DIR/pipeline-plan.md
+# FEATURE_DIR/pipeline-constraints.md, if present, is appended to Global Constraints.
+# Exit: 0 written, 2 usage/missing files, 3 no unchecked tasks left,
+#       4 unchecked task lines outside any section.
+set -euo pipefail
+
+if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+  echo "usage: speckit-plan-from-tasks FEATURE_DIR [OUTFILE]" >&2
+  exit 2
+fi
+
+feature_dir=${1%/}
+[ -d "$feature_dir" ] || { echo "no such feature directory: $feature_dir" >&2; exit 2; }
+tasks="$feature_dir/tasks.md"
+[ -f "$tasks" ] || { echo "no tasks.md in $feature_dir — run speckit-tasks first" >&2; exit 2; }
+[ -f "$feature_dir/spec.md" ] || { echo "no spec.md in $feature_dir" >&2; exit 2; }
+out=${2:-"$feature_dir/pipeline-plan.md"}
+
+# Paths in the plan are repo-relative so they read the same from any worktree.
+repo=$(git -C "$feature_dir" rev-parse --show-toplevel 2>/dev/null) || {
+  echo "feature directory is not inside a git repository: $feature_dir" >&2
+  exit 2
+}
+abs_dir=$(cd "$feature_dir" && pwd -P)
+repo=$(cd "$repo" && pwd -P)
+rel_dir=${abs_dir#"$repo"/}
+
+design=""
+for f in plan.md research.md data-model.md contracts quickstart.md; do
+  [ -e "$feature_dir/$f" ] && design="$design${design:+, }$rel_dir/$f"
+done
+# An unfilled constitution (still the template) binds nothing. Spec Kit
+# records the template's hash in .constitution-template.json.
+constitution="none"
+c="$repo/.specify/memory/constitution.md"
+if [ -f "$c" ]; then
+  constitution=".specify/memory/constitution.md"
+  if grep -qE '\[(PROJECT_NAME|PRINCIPLE_1_NAME)\]' "$c"; then
+    constitution="none"
+  elif [ -f "$repo/.specify/memory/.constitution-template.json" ]; then
+    template_sha=$(sed -n 's/.*"sha256": *"\([0-9a-f]*\)".*/\1/p' "$repo/.specify/memory/.constitution-template.json")
+    if command -v shasum >/dev/null 2>&1; then
+      sha=$(shasum -a 256 "$c" | cut -d' ' -f1)
+    else
+      sha=$(sha256sum "$c" | cut -d' ' -f1)
+    fi
+    [ -n "$template_sha" ] && [ "$sha" = "$template_sha" ] && constitution="none"
+  fi
+fi
+
+body=$(mktemp)
+trap 'rm -f "$body"' EXIT
+
+# Every level-2 section (outside code fences) that still has an unchecked
+# task line becomes one task, identified by the first Spec Kit task ID in the
+# section ("### Task T008"). Spec Kit never renumbers task IDs, so a task keeps
+# its ID when the plan is regenerated — subagent-driven-development's ledger
+# records progress by task ID and must never see one ID mean two tasks — "## Phase 3: ...", "## Phase N: Polish",
+# "## Final Phase", "## Phase 10: Convergence" alike. Task lines may be
+# indented or carry a bold ID. Deeper headings are demoted one level so they
+# sit under the generated "### Task N" heading. An unchecked task line
+# outside any level-2 section is an error, never silently dropped.
+awk -v tasks_rel="$rel_dir/tasks.md" '
+  function flush() {
+    if (insec && unchecked > 0) {
+      n++
+      printf "### Task %s: %s\n\n", firstid, title
+      print "Implement every unchecked Spec Kit task line below, in order, honoring"
+      print "\"depends on\" notes; `[P]` lines touch independent files. Lines already"
+      print "marked `[X]` are done. When a line is finished, change its `- [ ]` to"
+      print "`- [X]` in " tasks_rel " in the same commit as the work. A line that"
+      print "only verifies (run scenarios against a live instance, run the full"
+      print "suite, a manual check) is not implementation work: leave it unchecked"
+      print "and say so in your report — QA performs it.\n"
+      printf "%s", buf
+      print ""
+    }
+    insec = 0; buf = ""; unchecked = 0; firstid = ""
+  }
+  /^[ \t]*```/ { infence = !infence }
+  !infence && /^## / { flush(); insec = 1; title = substr($0, 4); next }
+  !infence && insec && firstid == "" && /^[ \t]*[-*] \[[ xX]\] (\*\*)?T[0-9]+/ {
+    match($0, /T[0-9]+/); firstid = substr($0, RSTART, RLENGTH)
+  }
+  !infence && /^[ \t]*[-*] \[ \] (\*\*)?T[0-9]+/ {
+    if (!insec) { stray++; print "stray task line outside any section: " $0 > "/dev/stderr" }
+    unchecked++
+  }
+  insec {
+    line = $0
+    if (!infence && line ~ /^###/) line = "#" line
+    buf = buf line "\n"
+  }
+  END {
+    flush()
+    if (stray) exit 4
+    if (!n) exit 3
+  }
+' "$tasks" > "$body" || {
+  rc=$?
+  if [ "$rc" -eq 3 ]; then
+    echo "no unchecked task lines in $tasks — nothing left to build" >&2
+  fi
+  exit "$rc"
+}
+
+title=$(sed -n 's/^# Tasks: //p' "$tasks" | head -n 1)
+[ -n "$title" ] || title=$(basename "$abs_dir")
+
+{
+  echo "# $title — Pipeline Implementation Plan"
+  echo
+  echo "> Generated from $rel_dir/tasks.md by superpowers:feature-pipeline."
+  echo "> tasks.md is the source of truth: regenerate this file, never edit task text here."
+  echo
+  echo "**Spec:** $rel_dir/spec.md"
+  echo "**Design:** ${design:-none}"
+  echo "**Constitution:** $constitution"
+  echo
+  echo "## Global Constraints"
+  echo
+  echo "- Requirements are spec.md's FR-NNN items, each user story's acceptance"
+  echo "  scenarios, and its SC-NNN success criteria. All are binding."
+  echo "- The design files above are binding: plan.md's stack and structure,"
+  echo "  data-model.md's entities, and contracts/ interfaces exactly as written."
+  if [ "$constitution" != "none" ]; then
+    echo "- Every MUST principle in the constitution binds every task."
+  fi
+  # Constraints the pipeline controller adds live in their own file so that
+  # regenerating this plan never drops them.
+  if [ -f "$feature_dir/pipeline-constraints.md" ]; then
+    cat "$feature_dir/pipeline-constraints.md"
+  fi
+  echo
+  cat "$body"
+} > "$out"
+
+echo "wrote $out: $(grep -c '^### Task ' "$out") tasks"

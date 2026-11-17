@@ -3,7 +3,8 @@
 #
 # Usage: run-unattended SPEC_FILE [--integration keep|pr] [--log FILE] [-- CLAUDE_ARGS...]
 #
-#   SPEC_FILE        an existing spec inside the target git repository
+#   SPEC_FILE        an existing spec inside the target git repository, or a
+#                    Spec Kit feature directory (specs/NNN-name/) holding spec.md
 #   --integration    keep (default): leave the branch; pr: push it and open a PR
 #   --log FILE       transcript path (default: $TMPDIR/feature-pipeline/<timestamp>.log)
 #   CLAUDE_ARGS      passed to `claude -p` unchanged — permissions go here.
@@ -19,7 +20,7 @@
 set -euo pipefail
 
 usage() {
-  sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 spec=""
@@ -62,6 +63,10 @@ while [ $# -gt 0 ]; do
 done
 
 [ -n "$spec" ] || { usage >&2; exit 64; }
+if [ -d "$spec" ]; then
+  [ -f "${spec%/}/spec.md" ] || { echo "no spec.md in directory: $spec" >&2; exit 64; }
+  spec="${spec%/}/spec.md"
+fi
 [ -f "$spec" ] || { echo "no such spec file: $spec" >&2; exit 64; }
 case "$integration" in
   keep | pr) ;;

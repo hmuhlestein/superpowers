@@ -22,6 +22,9 @@ their fix wave.
 
 ## Rewind procedure
 
+In Spec Kit mode, follow the Rewind section of [speckit.md](speckit.md)
+instead of the steps below.
+
 1. Ledger `Rewind to stage 3: <finding IDs> — <reason>`. The resume point is
    now stage 3; stages after it re-run even though the ledger shows them
    complete earlier.

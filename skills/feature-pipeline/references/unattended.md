@@ -6,8 +6,9 @@ the skills it uses: nobody is there to answer.
 
 ## Inputs
 
-- **Spec** — a path to an existing spec. No brainstorming: without a spec,
-  end with `PIPELINE STATUS: FAILED — no spec`.
+- **Spec** — a path to an existing spec, or a Spec Kit feature directory
+  (see [speckit.md](speckit.md)'s Unattended section). No brainstorming:
+  without a spec, end with `PIPELINE STATUS: FAILED — no spec`.
 - **Integration** — `keep` (default) or `pr`. Never a local merge.
 - **Deploy** — never. The report notes that deploy awaits a human.
 
@@ -26,7 +27,7 @@ the skills it uses: nobody is there to answer.
 |---|---|
 | Open question at any stage | Rule from the spec, requirements, and codebase, taking the most conservative reading (least scope, least data exposure, nothing irreversible). Ledger `Ruling: [unattended] ...` and write the answer under `## Resolved Questions`. |
 | A question about the spec itself | Same, and flag it at the top of the final message. |
-| Stage 2 or 4 at its cap with open Critical/Important | Blocked |
+| Stage 2 or 4 (or the Spec Kit analyze gate) at its cap with open Critical/Important | Blocked |
 | Stages 7–9 or release at the cap, Important | Park with a Ruling |
 | Any stage at the cap, Critical | Blocked |
 | Malformed report twice | Blocked |

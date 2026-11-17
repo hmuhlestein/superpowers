@@ -30,6 +30,13 @@ were launched by [scripts/run-unattended](scripts/run-unattended). In
 unattended mode, read [references/unattended.md](references/unattended.md)
 before Setup — it replaces every "ask your human partner" in this skill.
 
+**Spec Kit projects.** When the repo has `.specify/` and the spec is a Spec
+Kit feature (`specs/<NNN-name>/`), read
+[references/speckit.md](references/speckit.md) before Setup. Spec Kit's
+spec.md, plan.md, and tasks.md replace stages 1–5's artifacts; the pipeline
+runs the Spec Kit commands still missing, gates them, and builds from
+tasks.md. Run files live in the feature directory.
+
 **Rulings, not stalls.** Same rule as superpowers:subagent-driven-development:
 decide conflicts and ambiguities yourself and record each as
 `Ruling: <what you decided> — <why> — <what it costs if wrong>` in the ledger.
@@ -45,7 +52,12 @@ question only your human partner can answer about the spec itself.
    superpowers:brainstorming first, then come back here — brainstorming
    knows to return to this skill instead of going to writing-plans.
 2. **Workspace.** Use superpowers:using-git-worktrees. Never run the
-   pipeline on main/master.
+   pipeline on main/master. A new worktree sees only committed files: if
+   the spec — or the Spec Kit feature directory, or `.specify/` — has
+   uncommitted changes in the checkout you started from, copy them into the
+   worktree and commit them there as the branch's first commit (never
+   `.specify/feature.json`). Never
+   commit on the branch you started from.
 3. **Run directory.** Look for an existing run first:
    `grep -l "spec: <spec path>" docs/superpowers/pipeline/*/progress.md`.
    If one matches, it is `[RUN_DIR]` — resume. Otherwise create
@@ -209,8 +221,10 @@ requirements, or codebase if you can (ledger a Ruling); otherwise ask your
 human partner (unattended: see references/unattended.md). Then write every
 answer where later stages will read it: append it under
 `## Resolved Questions` in requirements.md or architecture.md (that section
-is the only edit you make to those files) and commit. A ruling that lives
-only in the ledger is invisible to the next subagent.
+is the only edit you make to those files) and commit. In Spec Kit mode,
+spec.md's `## Clarifications` and plan.md take them instead — see
+references/speckit.md. A ruling that lives only in the ledger is invisible
+to the next subagent.
 
 ## The fix wave
 

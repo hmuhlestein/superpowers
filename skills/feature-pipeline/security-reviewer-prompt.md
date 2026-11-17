@@ -104,7 +104,7 @@ Subagent (general-purpose):
     2. The console summary gives only counts for detect-secrets. Before
        cleaning up, read its per-finding detail from
        `.ash/ash_output/scanners/detect-secrets/source/results_sarif.sarif`.
-       Then `rm -rf .ash` and confirm with `git status --porcelain -- . ':!docs/superpowers/pipeline'`
+       Then `rm -rf .ash` and confirm with `git status --porcelain -- . ':![RUN_DIR]'`
        that the tree is exactly as you found it (sibling reviewers write
        their reports under the run dir while you work).
     3. If `uvx` is unavailable, or the scan fails or times out, do NOT
