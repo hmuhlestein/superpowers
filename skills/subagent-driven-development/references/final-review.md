@@ -11,7 +11,9 @@ printed path in the final review dispatch, so the final reviewer reads
 one file instead of re-deriving the branch diff with git commands. Dispatch
 on the most capable available model (see SKILL.md's Model Selection), using
 superpowers:requesting-code-review's
-[code-reviewer.md](../../requesting-code-review/code-reviewer.md). Point it at
+[code-reviewer.md](../../requesting-code-review/code-reviewer.md), filling
+`[ARCHITECTURE_OR_NONE]` with the architecture document the plan or spec
+names (or `none`). Point it at
 the ledger's deferred-minor and parked lines so it can triage which must be
 fixed before merge.
 

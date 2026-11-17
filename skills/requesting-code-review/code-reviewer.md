@@ -20,6 +20,16 @@ Subagent (general-purpose):
 
     [PLAN_OR_REQUIREMENTS]
 
+    ## Architecture
+
+    [ARCHITECTURE_OR_NONE]
+
+    If an architecture document is named above, read it before the diff:
+    it is the design contract the code must conform to, and the
+    Architecture conformance checks below apply in full. If it says
+    `none`, judge design soundness on its own merits and skip the
+    conformance checks.
+
     ## Git Range to Review
 
     **Base:** [BASE_SHA]
@@ -80,6 +90,37 @@ Subagent (general-purpose):
     - Security concerns?
     - Integrates cleanly with surrounding code?
 
+    **Architecture conformance (only when an architecture document is given):**
+    - Components, interfaces, data models, and data flow match the design;
+      every designed component exists and nothing undesigned was added
+    - Stated invariants and constraints are enforced in code, not assumed
+    - Component boundaries hold: no leaky abstractions, no coupling where
+      the design called for loose coupling, no inter-component calls the
+      design doesn't describe
+    - Error handling uses the designed error types and propagation; no
+      undesigned exceptions or swallowed failures
+    - Concurrency matches the stated model: shared mutable state is
+      protected, async/sync boundaries are respected (no blocking I/O in
+      async paths)
+    - Wiring and initialization: components get their required
+      dependencies, start in a valid order, and clean up as designed
+    - Gotchas the design warns about are avoided
+    - Over-engineering (built beyond the design) and under-engineering
+      (designed parts simplified or skipped) both count as deviations
+
+    **Integration:**
+    - New code is actually reachable: routes registered, modules imported,
+      UI rendered and wired to handlers, config read, migrations present
+    - Data computed by new code actually flows to where it is used —
+      no dead paths that "work" but are never called
+
+    Classify a conformance problem by its effect: a broken contract,
+    invariant, or data flow is Critical; a deviation that works but
+    departs from the design is Important. When the implementer had to
+    invent something the architecture should have decided (a signature,
+    an error type, a concurrency rule), report it as a gap in the
+    architecture document, separately from code issues.
+
     **Testing:**
     - Tests verify real behavior, not mocks?
     - Edge cases covered?
@@ -132,6 +173,8 @@ Subagent (general-purpose):
 
     **Ready to merge?** [Yes | No | With fixes]
 
+    **Architecture:** [Conforms | Deviates (fixable in code) | Violated — needs redesign | No architecture document]
+
     **Reasoning:** [1-2 sentence technical assessment]
 
     ## Critical Rules
@@ -154,6 +197,7 @@ Subagent (general-purpose):
 **Placeholders:**
 - `[DESCRIPTION]` — brief summary of what was built
 - `[PLAN_OR_REQUIREMENTS]` — what it should do (plan file path, task text, or requirements)
+- `[ARCHITECTURE_OR_NONE]` — path to the architecture/design document the code must conform to, or `none`
 - `[BASE_SHA]` — starting commit
 - `[HEAD_SHA]` — ending commit
 

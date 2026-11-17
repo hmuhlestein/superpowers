@@ -29,6 +29,7 @@ When multiple skills apply, process skills come first — they set the approach,
 
 - "Let's build X" → superpowers:brainstorming first, then implementation skills.
 - "Fix this bug" → superpowers:systematic-debugging first, then domain skills.
+- "Run the full pipeline on X" → superpowers:feature-pipeline (it starts with brainstorming when there is no spec).
 
 ## Red Flags
 

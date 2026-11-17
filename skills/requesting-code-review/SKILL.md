@@ -36,6 +36,7 @@ Dispatch a `general-purpose` subagent, filling the template at [code-reviewer.md
 **Placeholders:**
 - `{DESCRIPTION}` - Brief summary of what you built
 - `{PLAN_OR_REQUIREMENTS}` - What it should do
+- `{ARCHITECTURE_OR_NONE}` - Architecture document the code must conform to, or `none`
 - `{BASE_SHA}` - Starting commit
 - `{HEAD_SHA}` - Ending commit
 
