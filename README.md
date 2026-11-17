@@ -97,7 +97,7 @@ Exit codes: 0 COMPLETE, 2 BLOCKED, 1 FAILED or no status line, 64 bad arguments.
 - `walkthrough.md` (what was built, why, and how) and `feature_report.html`;
 - `build-reports/`, the build's per-task reports with the test-first evidence.
 
-To watch a run while it works, tail the ledger in its worktree: `tail -f <worktree>/<run dir>/progress.md`.
+While it works, the launcher prints each new ledger line (stages, verdicts, fix waves, rulings, blocks) as `[progress] …`. The headless session itself prints only its final message.
 
 **Native Spec Kit support.** When a repo has `.specify/` and the spec is a Spec Kit feature (`specs/NNN-name/`), the pipeline resumes from whatever Spec Kit artifacts exist instead of writing its own:
 

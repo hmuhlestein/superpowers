@@ -13,6 +13,7 @@
 #                    bypassPermissions` inside a disposable container or VM,
 #                    or an --allowedTools list.
 #
+# Progress-log lines are echoed as "[progress] ..." while the run works.
 # Relaunch with the same SPEC_FILE to resume a Blocked run after writing
 # answers to <run dir>/human-input.md.
 #
@@ -20,7 +21,7 @@
 set -euo pipefail
 
 usage() {
-  sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 spec=""
@@ -100,10 +101,42 @@ echo "spec:        $spec_rel"
 echo "integration: $integration"
 echo "log:         $log"
 
+# Echo the run's ledger as it grows, so a hands-free run shows its progress
+# (the headless session itself prints only its final message). The ledger
+# lives wherever the run puts its worktree; find it by its first line.
+watch_ledger() {
+  local ledger="" shown=0 total
+  while :; do
+    if [ -z "$ledger" ]; then
+      ledger=$(find "$repo" -name progress.md -not -path '*/.git/*' \
+        -not -path '*/node_modules/*' -not -path '*/build-reports/*' 2>/dev/null |
+        while IFS= read -r f; do
+          head -n 1 "$f" | grep -qF "spec: $spec_rel" && { echo "$f"; break; }
+        done)
+      [ -n "$ledger" ] && echo "[progress] ledger: $ledger"
+    fi
+    if [ -n "$ledger" ] && [ -f "$ledger" ]; then
+      total=$(wc -l < "$ledger" | tr -d ' ')
+      if [ "$total" -gt "$shown" ]; then
+        sed -n "$((shown + 1)),${total}p" "$ledger" |
+          grep -E '^(Stage|Fix wave|Build round|Converge round|Rewind|Blocked|Ruling)' |
+          sed 's/^/[progress] /'
+        shown=$total
+      fi
+    fi
+    sleep 15
+  done
+}
+
 cd "$repo"
+watch_ledger &
+watcher=$!
+trap 'kill "$watcher" 2>/dev/null || true' EXIT
 set +e
 claude -p "$prompt" ${claude_args[@]+"${claude_args[@]}"} 2>&1 | tee "$log"
 set -e
+kill "$watcher" 2>/dev/null || true
+wait "$watcher" 2>/dev/null || true
 
 status=$(grep -E '^PIPELINE STATUS: ' "$log" | tail -n 1 || true)
 case "$status" in

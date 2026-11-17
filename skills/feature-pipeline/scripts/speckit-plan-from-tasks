@@ -135,6 +135,9 @@ title=$(sed -n 's/^# Tasks: //p' "$tasks" | head -n 1)
   echo "  data-model.md's entities, and contracts/ interfaces exactly as written."
   echo "- The build commits each task's work, which overrides any \"do not commit\""
   echo "  instruction in tasks.md."
+  echo "- Run only the formatters and linters the repo already configures, and"
+  echo "  keep build output, caches, and local state out of git (extend .gitignore"
+  echo "  in the task that first produces them)."
   if [ "$constitution" != "none" ]; then
     echo "- Every MUST principle in the constitution binds every task."
   fi

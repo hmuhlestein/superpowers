@@ -100,21 +100,30 @@ Subagent (general-purpose):
     Run the AWS Automated Security Helper yourself; nothing has pre-run it.
     1. If `uvx` is on PATH, run from the repo root with a generous timeout
        (about 10 minutes — the first run fetches and caches ASH):
-       `uvx "git+https://github.com/awslabs/automated-security-helper.git@v3.7.0" --source-dir . --changed-files-only --base-ref [BASE_BRANCH]`
+       `uvx "git+https://github.com/awslabs/automated-security-helper.git@v3.8.0" --source-dir . --changed-files-only --base-ref [BASE_BRANCH] --no-fail-on-incomplete-scanners`
+       ASH runs each scanner whose tool is installed and reports the rest
+       as MISSING (gitleaks, grype, opengrep, syft, and trivy are often
+       absent). A MISSING scanner is a coverage gap, not a failed scan:
+       list them in the report and carry on.
     2. The console summary gives only counts for detect-secrets. Before
        cleaning up, read its per-finding detail from
        `.ash/ash_output/scanners/detect-secrets/source/results_sarif.sarif`.
        Then `rm -rf .ash` and confirm with `git status --porcelain -- . ':![RUN_DIR]'`
        that the tree is exactly as you found it (sibling reviewers write
        their reports under the run dir while you work).
-    3. If `uvx` is unavailable, or the scan fails or times out, do NOT
+    3. If `uvx` is unavailable, or ASH itself errors or times out (no
+       results summary printed), do NOT
        install uv or anything else. Record `SCAN NOT RUN: <reason>`
        verbatim, add an open question asking your human partner to install
        uv to enable it, and continue with the manual review plus the
        project's own audit tools.
 
     Triage every HIGH/CRITICAL result: a real finding becomes a SEC-N
-    finding; a false positive gets a one-line reason. Do not re-run
+    finding; a false positive gets a one-line reason. Hits in pipeline
+    records — [RUN_DIR], `docs/superpowers/`, `.specify/` (Spec Kit's
+    manifests are full of content hashes that detect-secrets flags) — get
+    one line in total ("N hits in pipeline records: hashes, not secrets"),
+    not one line each. Do not re-run
     detect-secrets unscoped against the whole repo — it floods with lockfile
     hashes and unrelated files.
 
@@ -209,6 +218,7 @@ Subagent (general-purpose):
 
         ## Automated Scan Results
         ASH: <per-scanner counts by severity, or "SCAN NOT RUN: <reason>">
+        Scanners MISSING: <names, or "none"> — coverage gaps
         Other audits: <command and result counts, or "unavailable: <reason>">
         - <scanner> <severity> path:line — real (SEC-N) | false positive: <reason>
           (one line per HIGH/CRITICAL result)

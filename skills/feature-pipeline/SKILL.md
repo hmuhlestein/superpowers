@@ -132,8 +132,12 @@ configuration decisions; and the changed-line coverage floor (80% unless the
 spec sets one) — only when the project has a coverage tool or its
 constraints allow adding one. Otherwise write "Coverage: not measured — no
 coverage tool permitted" and rely on the acceptance-criteria test mapping
-below; never have implementers build a coverage tool. Implementers see only
-their brief plus these constraints.
+below; never have implementers build a coverage tool. Always add two
+working rules: run only the formatters and linters the repo already
+configures (an unconfigured formatter rewrites unrelated lines); and keep
+build output, caches, and local state out of git, extending `.gitignore`
+in the task that first produces them. Implementers see only their brief
+plus these constraints.
 
 Then check coverage yourself: every `REQ-NN.AC-M` maps to a task whose
 tests exercise it. Add a task for each gap. Commit the plan
