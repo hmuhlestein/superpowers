@@ -2,8 +2,63 @@
 
 Superpowers is a complete software development methodology for your coding agents, built on top of a set of composable skills and some initial instructions that make sure your agent uses them.
 
+## This Fork
+
+This is [hmuhlestein/superpowers](https://github.com/hmuhlestein/superpowers), a fork of [obra/superpowers](https://github.com/obra/superpowers). It adds a gated spec-to-release pipeline ported from the [HephaestusNG](https://github.com/hmuhlestein/HephaestusNG) autopilot workflow, rebuilt in superpowers' own style: prompt templates dispatched to fresh subagents, not named agents or a backend.
+
+### Install the fork (Claude Code)
+
+```bash
+claude plugin marketplace add hmuhlestein/superpowers   # registers "superpowers-dev"
+claude plugin install superpowers@superpowers-dev --scope user
+```
+
+To pick up a new version: `claude plugin marketplace update superpowers-dev && claude plugin update superpowers@superpowers-dev`, then restart Claude Code. Installed copies are cached by version, so every release that changes skill content bumps the version in all 12 manifests listed in `.version-bump.json`.
+
+### What the fork adds
+
+**`feature-pipeline` skill** ([skills/feature-pipeline/](skills/feature-pipeline/)) takes one feature from an approved spec to a release-ready branch. Every artifact is judged by a context that did not write it:
+
+| # | Stage | Template / skill |
+|---|---|---|
+| 1–2 | Requirements, then a scope gate against the spec | `requirements-analyst`, `scope-reviewer` |
+| 3–4 | Architecture, then an adversarial design gate | `architect`, `design-challenger` |
+| 5–6 | Plan and build | `writing-plans`, `subagent-driven-development` (final review checks architecture conformance) |
+| 7 | Parallel adversarial, security, and privacy reviews | `adversarial-reviewer`, `security-reviewer` (runs AWS Automated Security Helper via `uvx`), `privacy-reviewer` (only when personal data is involved) |
+| 8–9 | QA, then product validation | `qa-validator`, `product-validator` |
+| 10 | Docs fixed in place | `doc-reviewer` |
+| 11 | Release prep, HTML feature report, integration, post-PR CI and review follow-up, deploy only with `DEPLOY.md` and explicit approval | `release-engineer`, `feature-reporter`, `finishing-a-development-branch` |
+
+Gates return `PASS`, `FIX`, or `REDESIGN`. A FIX runs one fix subagent, with a regression test proven to fail first for each fix, then re-reviews the fix. Every loop is capped. Pre-build gates never wave findings through; post-build gates park Important findings with a recorded ruling and stop on open Critical ones. Each run keeps a resumable ledger and writes a standalone, light/dark-aware `feature_report.html`, with every accepted risk called out near the top. Details: [SKILL.md](skills/feature-pipeline/SKILL.md) and [references/](skills/feature-pipeline/references/).
+
+**Unattended mode.** Run the whole pipeline headless from a written spec:
+
+```bash
+skills/feature-pipeline/scripts/run-unattended SPEC_FILE_OR_SPECKIT_DIR [--integration keep|pr] -- <claude permission flags>
+```
+
+It never asks questions: it records conservative rulings and stops as `BLOCKED` only for decisions that need a human. It never merges or deploys. Exit codes are 0 COMPLETE, 2 BLOCKED, 1 FAILED. To resume a blocked run, answer in `<run dir>/human-input.md` and relaunch. Headless runs can't answer permission prompts, so pass permission flags yourself, and use `--dangerously-skip-permissions` only somewhere disposable.
+
+**Native Spec Kit support.** When a repo has `.specify/` and the spec is a Spec Kit feature (`specs/NNN-name/`), the pipeline resumes from whatever Spec Kit artifacts exist instead of writing its own:
+
+- spec.md serves as the requirements, plan.md and its companion files as the design, tasks.md as the plan.
+- Missing `speckit-plan` and `speckit-tasks` steps run as headless subagents.
+- `speckit-analyze` becomes a gate before the build, and `speckit-converge` closes gaps after it.
+- The constitution is binding on every review.
+- [scripts/speckit-plan-from-tasks](skills/feature-pipeline/scripts/speckit-plan-from-tasks) turns tasks.md into a subagent-driven-development plan, one task per phase, keyed by T-ID so progress survives regeneration. Implementers tick tasks.md as they go.
+
+Run files live in the feature directory beside Spec Kit's own. See [references/speckit.md](skills/feature-pipeline/references/speckit.md).
+
+### Changes to upstream skills
+
+- **requesting-code-review**: `code-reviewer.md` takes an optional `[ARCHITECTURE_OR_NONE]`. Given an architecture document, it also checks conformance (components, contracts, invariants, boundaries, error and concurrency model, wiring) and reports `Architecture: Conforms | Deviates | Violated — needs redesign`. Given `none`, it behaves as upstream.
+- **subagent-driven-development** (final review) and **executing-plans** pass the architecture document through to that reviewer.
+- **brainstorming** returns to `feature-pipeline` when the pipeline sent it there, instead of going straight to writing-plans.
+- **using-superpowers** routes "run the full pipeline on X" to `feature-pipeline`.
+
 ## Table of Contents
 
+- [This Fork](#this-fork)
 - [How it works](#how-it-works)
 - [Commercial Services](#commercial-services)
 - [Getting Started](#installation)
