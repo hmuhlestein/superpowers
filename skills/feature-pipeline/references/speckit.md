@@ -15,6 +15,7 @@ its gates around them, and builds from tasks.md.
 - `FEATURE_DIR` = the feature directory (repo-relative). **`[RUN_DIR]` =
   `FEATURE_DIR`**: pipeline files sit beside Spec Kit's — progress.md,
   challenge.md, analyze.md, pipeline-plan.md, pipeline-constraints.md,
+  pipeline-split.md,
   review.md, adversarial.md, security.md, privacy.md, qa.md, validation.md,
   docs.md, release.md, walkthrough.md, feature_report.html, fix-*.md,
   build-reports/. None
@@ -153,6 +154,33 @@ the constitution, the security and privacy decisions (including log
 redaction) and configuration decisions. The converter appends this file to
 the plan's Global Constraints every time it runs.
 
+**Split large phases.** One task per phase suits most phases, but a phase
+with more than about 8 open task lines, or one that spans more than two or
+three source areas (say a model, a migration, an API, and a UI), makes one
+oversized implementer dispatch and one review over a sprawling diff. For
+each such phase, add groups to `FEATURE_DIR/pipeline-split.md`, one line
+per group:
+
+```
+T040: T040 T046 T047          # DB model + migration, with its test
+T041: T041 T042 T043 T044 T048 # queue scan, with its tests
+T045: T045 T049 T050          # API + settings UI, with its test
+```
+
+- Cut along layers or modules, and keep each test line in the same group
+  as the code it drives (match file paths and "depends on" notes) so
+  test-first still happens inside one task.
+- Order groups so each depends only on earlier groups and phases; the
+  converter emits them in the order their first lines appear in tasks.md.
+- Key each group by its first task in tasks.md order, and list the key as
+  a member. Every task line in a split phase belongs to exactly one group.
+- Leave small phases out of the file — they convert as one task.
+
+The converter validates the file and exits 5 on a mistake (a missing or
+duplicated line, a wrong key, a group spanning phases, an unknown ID);
+fix the file and rerun. Groups added later (for a Convergence or Redesign
+phase) never change existing groups' IDs.
+
 Then run `bash <this skill>/scripts/speckit-plan-from-tasks <FEATURE_DIR>`.
 It writes `pipeline-plan.md`: one `### Task <T-ID>` per tasks.md section that
 still has unchecked lines, identified by the section's first Spec Kit task
@@ -160,7 +188,7 @@ ID, with the text verbatim and the instruction to tick each line in tasks.md
 when it is finished. IDs never change between runs, so
 subagent-driven-development's ledger stays valid when the plan is
 regenerated. Exit 3: nothing left to build. Exit 4: task lines outside any
-section — fix tasks.md first.
+section — fix tasks.md first. Exit 5: a malformed pipeline-split.md.
 
 **Verification-only lines** (scenarios against a live or shared
 environment, a full-suite run, a manual walkthrough) are not implementation
@@ -169,8 +197,8 @@ you tick them after QA passes, in the same commit as qa.md. Test-first
 red/green checks are implementation work — implementers run and tick them.
 The converter's task text says both.
 
-Commit tasks.md, the design files, pipeline-constraints.md, and
-pipeline-plan.md.
+Commit tasks.md, the design files, pipeline-constraints.md,
+pipeline-split.md (if any), and pipeline-plan.md.
 
 ## Build and convergence
 

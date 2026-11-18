@@ -105,7 +105,7 @@ While it works, the launcher prints each new ledger line (stages, verdicts, fix 
 - Missing `speckit-plan` and `speckit-tasks` steps run as headless subagents.
 - `speckit-analyze` becomes a gate before the build, and `speckit-converge` closes gaps after it.
 - The constitution is binding on every review.
-- [scripts/speckit-plan-from-tasks](skills/feature-pipeline/scripts/speckit-plan-from-tasks) turns tasks.md into a subagent-driven-development plan, one task per phase, keyed by T-ID so progress survives regeneration. Implementers tick tasks.md as they go.
+- [scripts/speckit-plan-from-tasks](skills/feature-pipeline/scripts/speckit-plan-from-tasks) turns tasks.md into a subagent-driven-development plan, one task per phase, keyed by T-ID so progress survives regeneration. Large phases are split along layers via `pipeline-split.md`, with each test kept alongside the code it drives. Implementers tick tasks.md as they go.
 
 Run files live in the feature directory beside Spec Kit's own. See [references/speckit.md](skills/feature-pipeline/references/speckit.md).
 
